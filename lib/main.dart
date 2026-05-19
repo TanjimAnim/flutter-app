@@ -49,7 +49,7 @@ class CustomDrawer extends StatelessWidget {
             child: Text(
               "Menu",
               style: GoogleFonts.poppins(
-                color: Colors.white,
+                color: Color(0xff006cff),
                 fontSize: 24.0,
                 fontWeight: FontWeight.w600,
               ),
