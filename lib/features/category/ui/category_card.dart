@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_application_1/base_url.dart';
 
 import '../data/category_model.dart';
-import 'package:flutter/material.dart';
 
 class CategoryCard extends StatelessWidget {
   final CategoryItem category;
@@ -24,7 +24,7 @@ class CategoryCard extends StatelessWidget {
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (_, _, _) => Container(
                 height: 120,
                 color: Colors.grey.shade200,
                 child: const Icon(Icons.broken_image, color: Colors.grey),
@@ -40,10 +40,10 @@ class CategoryCard extends StatelessWidget {
                   Row(
                     children: [
                       Image.network(
-                        category.icon,
+                        '$mediaUrl?id=${category.icon}',
                         width: 24,
                         height: 24,
-                        errorBuilder: (_, __, ___) =>
+                        errorBuilder: (_, _, _) =>
                             const Icon(Icons.category, size: 24),
                       ),
                       const SizedBox(width: 8),

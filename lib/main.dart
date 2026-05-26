@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import './core/network/connector_config.dart';
+import './features/category/ui/category_page.dart';
 
 void main() {
   setupConnector();
@@ -115,24 +117,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       iconTheme: IconThemeData(color: Color.fromARGB(24, 54, 23, 56)),
       backgroundColor: const Color(0xFF006CFF),
       shadowColor: Color.fromARGB(24, 54, 23, 56),
-    );
-  }
-}
-
-class CategoryPage extends StatelessWidget {
-  const CategoryPage({super.key});
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return Scaffold(
-      body: Center(
-        child: Text(
-          "Category Page",
-          style: GoogleFonts.poppins(fontSize: 50.0, color: Color(0xFF006CFF)),
-        ),
-      ),
-      appBar: CustomAppBar(title: "Category"),
-      drawer: CustomDrawer(),
     );
   }
 }

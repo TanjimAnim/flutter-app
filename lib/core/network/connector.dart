@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-import 'package:http/http.dart' as http;
+
+import 'package:dio/dio.dart' as dio;
 
 typedef ResponseHandler<T> =
-    Future<T> Function(http.Response response, RequestOptions options);
+    Future<T> Function(dio.Response response, RequestOptions options);
 typedef VoidHandler = Future<void> Function();
 typedef NetworkErrorHandler = Future<void> Function();
 
@@ -65,7 +65,7 @@ class Connector {
   NetworkErrorHandler? onNetworkError;
 
   bool _runningRequest = false;
-
+  final dio.Dio _dio = dio.Dio();
   Connector({
     this.baseUrl = '',
     Map<String, String>? headers,
@@ -82,22 +82,23 @@ class Connector {
       await Future.delayed(Duration(milliseconds: onRequestStartDelay));
     }
     if (_runningRequest) {
-      await (options.onRequestStart ?? onRequestStart).call();
+      await (options.onRequestStart ?? onRequestStart)?.call();
     }
   }
 
   Future<void> _handleRequestEnd(RequestOptions options) async {
     _runningRequest = false;
-    await (options.onRequestStart ?? onRequestStart).call();
+    await (options.onRequestStart ?? onRequestStart)?.call();
   }
 
   Future<dynamic> handleResponse(
-    http.Response response,
+    dio.Response response,
     RequestOptions options,
   ) async {
     await _handleRequestEnd(options);
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
+    if (response.statusCode != null &&
+        response.statusCode! >= 200 &&
+        response.statusCode! < 300) {
       final handler = options.successHandler ?? successHandler;
       if (handler != null) return handler(response, options);
       return _defaultSuccessHandler(response, options);
@@ -109,18 +110,18 @@ class Connector {
   }
 
   Future<dynamic> _defaultSuccessHandler(
-    http.Response response,
+    dio.Response response,
     RequestOptions options,
   ) async {
-    if (response.body.isEmpty) return null;
-    return jsonDecode(response.body);
+    if (response.data == null) return null;
+    return response.data; // already decoded, no jsonDecode needed
   }
 
   Future<dynamic> _defaultErrorHandler(
-    http.Response response,
+    dio.Response response,
     RequestOptions options,
   ) async {
-    final status = response.statusCode;
+    final status = response.statusCode ?? 0;
 
     if (status == 404) {
       return await _resolve404(response, options);
@@ -135,28 +136,28 @@ class Connector {
     }
   }
 
-  Future<dynamic> _resolve404(http.Response res, RequestOptions opts) async {
+  Future<dynamic> _resolve404(dio.Response res, RequestOptions opts) async {
     if (opts.handle404 != null) return opts.handle404!(res, opts);
     if (opts.handleBadReq != null) return opts.handleBadReq!(res, opts);
     if (handle404 != null) return handle404!(res, opts);
     return _resolveBadReq(res, opts);
   }
 
-  Future<dynamic> _resolve403(http.Response res, RequestOptions opts) async {
+  Future<dynamic> _resolve403(dio.Response res, RequestOptions opts) async {
     if (opts.handle403 != null) return opts.handle403!(res, opts);
     if (opts.handleBadReq != null) return opts.handleBadReq!(res, opts);
     if (handle403 != null) return handle403!(res, opts);
     return _resolveBadReq(res, opts);
   }
 
-  Future<dynamic> _resolve400(http.Response res, RequestOptions opts) async {
+  Future<dynamic> _resolve400(dio.Response res, RequestOptions opts) async {
     if (opts.handle400 != null) return opts.handle400!(res, opts);
     if (opts.handleBadReq != null) return opts.handleBadReq!(res, opts);
     if (handle400 != null) return handle400!(res, opts);
     return _resolveBadReq(res, opts);
   }
 
-  Future<dynamic> _resolveBadReq(http.Response res, RequestOptions opts) async {
+  Future<dynamic> _resolveBadReq(dio.Response res, RequestOptions opts) async {
     if (opts.handleBadReq != null) return opts.handleBadReq!(res, opts);
     if (handleBadReq != null) return handleBadReq!(res, opts);
     // built-in default
@@ -165,7 +166,7 @@ class Connector {
     return res;
   }
 
-  Future<void> _resolve500(http.Response res, RequestOptions opts) async {
+  Future<void> _resolve500(dio.Response res, RequestOptions opts) async {
     if (opts.handle500 != null) return opts.handle500!(res, opts);
     if (handle500 != null) return handle500!(res, opts);
     // built-in default
@@ -188,6 +189,9 @@ class Connector {
     return Uri.parse(resolved);
   }
 
+  String _buildUrl(String url, RequestOptions options) =>
+      options.externalUrl ? url : Connector.joinUrl(baseUrl, url);
+
   Map<String, String> _buildHeaders(RequestOptions options) {
     return {
       'Content-Type': 'application/json',
@@ -196,15 +200,21 @@ class Connector {
     };
   }
 
+  dio.Options _dioOptions(RequestOptions options) {
+    final hdrs = _buildHeaders(options);
+    if (options.removeContentType) hdrs.remove('Content-Type');
+    return dio.Options(headers: hdrs);
+  }
+
   Future<dynamic> get(
     String url, {
     RequestOptions options = const RequestOptions(),
   }) async {
     await _handleRequestStart(options);
     try {
-      final response = await http.get(
-        _buildUri(url, options),
-        headers: _buildHeaders(options),
+      final response = await _dio.get(
+        _buildUrl(url, options),
+        options: _dioOptions(options),
       );
       return handleResponse(response, options);
     } catch (_) {
@@ -227,10 +237,10 @@ class Connector {
         : jsonEncode(payload);
 
     try {
-      final response = await http.post(
-        _buildUri(url, options),
-        headers: hdrs,
-        body: body,
+      final response = await _dio.post(
+        _buildUrl(url, options),
+        data: body,
+        options: _dioOptions(options),
       );
       return handleResponse(response, options);
     } catch (_) {
@@ -253,10 +263,10 @@ class Connector {
         : jsonEncode(payload);
 
     try {
-      final response = await http.put(
-        _buildUri(url, options),
-        headers: hdrs,
-        body: body,
+      final response = await _dio.put(
+        _buildUrl(url, options),
+        data: body,
+        options: _dioOptions(options),
       );
       return handleResponse(response, options);
     } catch (_) {
@@ -270,9 +280,9 @@ class Connector {
   }) async {
     await _handleRequestStart(options);
     try {
-      final response = await http.delete(
-        _buildUri(url, options),
-        headers: _buildHeaders(options),
+      final response = await _dio.delete(
+        _buildUrl(url, options),
+        options: _dioOptions(options),
       );
       return handleResponse(response, options);
     } catch (_) {
@@ -281,7 +291,7 @@ class Connector {
   }
 
   static String joinUrl(String base, String relative) {
-    if (relative.startsWith('http://') || relative.startsWith('https://')) {
+    if (relative.startsWith('dio://') || relative.startsWith('dios://')) {
       return relative; // already absolute
     }
 
@@ -299,7 +309,6 @@ class Connector {
         resolved.add(part);
       }
     }
-
     return resolved.join('/');
   }
 
