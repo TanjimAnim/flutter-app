@@ -20,7 +20,7 @@ class CategoryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.network(
-              '$mediaUrl?id=${category.cover}',
+              '$mediaUrl?id=${category.cover}&size=original',
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -40,7 +40,7 @@ class CategoryCard extends StatelessWidget {
                   Row(
                     children: [
                       Image.network(
-                        '$mediaUrl?id=${category.icon}',
+                        '$mediaUrl?id=${category.icon}&size=original',
                         width: 24,
                         height: 24,
                         errorBuilder: (_, _, _) =>
