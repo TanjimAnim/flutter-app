@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/network/api_endpoints.dart';
+import 'package:flutter_application_1/features/appbar/ui/custom_appbar.dart';
 import 'package:flutter_application_1/features/category/data/category_model.dart';
 import 'category_card.dart';
 
@@ -27,7 +28,7 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Categories')),
+      appBar: CustomAppBar(title: 'Categories'),
       body: FutureBuilder<List<CategoryItem>>(
         future: _categories,
         builder: (context, snapshot) {

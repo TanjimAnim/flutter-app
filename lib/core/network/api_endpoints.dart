@@ -8,3 +8,11 @@ Future<dynamic> getCategory(
   final url = formatUrl("/api/category", parameters);
   return await connector.get(url, options: options);
 }
+
+Future<dynamic> getCourse(
+  Map<String, dynamic> parameters, {
+  RequestOptions options = const RequestOptions(),
+}) async {
+  final url = formatUrl("/api/course", parameters);
+  return await connector.get(url, options: options);
+}

@@ -184,10 +184,10 @@ class Connector {
     }
   }
 
-  Uri _buildUri(String url, RequestOptions options) {
-    final resolved = options.externalUrl ? url : joinUrl(baseUrl, url);
-    return Uri.parse(resolved);
-  }
+  // Uri _buildUri(String url, RequestOptions options) {
+  //   final resolved = options.externalUrl ? url : joinUrl(baseUrl, url);
+  //   return Uri.parse(resolved);
+  // }
 
   String _buildUrl(String url, RequestOptions options) =>
       options.externalUrl ? url : Connector.joinUrl(baseUrl, url);

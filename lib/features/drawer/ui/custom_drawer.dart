@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/about-us/ui/about_us_page.dart';
 import 'package:flutter_application_1/features/category/ui/category_page.dart';
+import 'package:flutter_application_1/features/course/ui/course_page.dart';
+import 'package:flutter_application_1/main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -28,6 +30,10 @@ class CustomDrawer extends StatelessWidget {
             title: Text("Home", style: GoogleFonts.poppins(fontSize: 14.0)),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyHomePage()),
+              );
             },
           ),
 
@@ -39,6 +45,17 @@ class CustomDrawer extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CategoryPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.category, color: Color(0xff006cff)),
+            title: Text("Course", style: GoogleFonts.poppins(fontSize: 14.0)),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CoursePage()),
               );
             },
           ),
